@@ -1,0 +1,31 @@
+package com.ayush.postify.mappers;
+
+import com.ayush.postify.domain.dtos.TagResponseDto;
+import com.ayush.postify.domain.entity.Post;
+import com.ayush.postify.domain.entity.Tag;
+import com.ayush.postify.enums.PostStatus;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
+
+import java.util.Set;
+
+@Mapper(componentModel = "spring" , unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface TagMapper {
+
+    @Mapping(target = "postCount" , source = "posts" , qualifiedByName = "calculatePostCount")
+    TagResponseDto toDto(Tag tag);
+
+
+    @Named("calculatePostCount")
+    default Integer calculatePostCount(Set<Post> posts){
+        if (posts == null){
+            return 0;
+        }
+        return (int) posts.stream()
+                .filter(post ->
+                        PostStatus.PUBLISHED.equals(post.getPostStatus()))
+                .count();
+    }
+}
